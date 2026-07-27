@@ -93,8 +93,18 @@ class DocumentAgentEngine:
             self.raw_dataframe = pd.read_csv(file_path)
             loader = CSVLoader(file_path, encoding='utf-8')
             documents = loader.load()
+        elif ext in ['xlsx', 'xls']:
+            from langchain_core.documents import Document
+            excel_file = pd.ExcelFile(file_path)
+            self.raw_dataframe = pd.read_excel(file_path)
+            documents = []
+            for sheet_name in excel_file.sheet_names:
+                df = pd.read_excel(file_path, sheet_name=sheet_name)
+                for idx, row in df.iterrows():
+                    row_str = f"Hoja: {sheet_name} | Fila {idx + 1}: " + ", ".join([f"{col}: {val}" for col, val in row.items() if pd.notna(val)])
+                    documents.append(Document(page_content=row_str, metadata={"source": filename, "sheet": sheet_name, "row": idx + 1}))
         else:
-            raise ValueError(f"Formato no soportado: .{ext}. Usa PDF, CSV, TXT o MD.")
+            raise ValueError(f"Formato no soportado: .{ext}. Usa PDF, CSV, TXT, MD, XLSX o XLS.")
 
         # Chunking documents
         text_splitter = RecursiveCharacterTextSplitter(

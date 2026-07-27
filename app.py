@@ -54,7 +54,7 @@ st.markdown("""
 st.markdown("""
 <div class="main-header">
     <h1>🤖 Alura Agente IA <span class="badge-gcp">Cloud Run / GCP Activo</span></h1>
-    <p>Asistente virtual para consulta instantánea de documentos corporativos (PDF, CSV, TXT, MD)</p>
+    <p>Asistente virtual para consulta instantánea de documentos corporativos (PDF, CSV, Excel XLSX, TXT, MD)</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -87,6 +87,7 @@ with st.sidebar:
             [
                 "manual_tecnologia_y_politicas.md (PDF/Markdown Tecnologías)",
                 "documentacion_saas_plataforma.md (SaaS: Precios, FAQ y Términos)",
+                "reporte_presupuestos_2026.xlsx (Excel Hoja de Cálculo)",
                 "datos_ventas_2015.csv (CSV Reporte Ventas)"
             ]
         )
@@ -96,14 +97,17 @@ with st.sidebar:
         elif "documentacion_saas_plataforma.md" in sample_choice:
             selected_file_path = os.path.join("sample_data", "documentacion_saas_plataforma.md")
             selected_file_name = "documentacion_saas_plataforma.md"
+        elif "reporte_presupuestos_2026.xlsx" in sample_choice:
+            selected_file_path = os.path.join("sample_data", "reporte_presupuestos_2026.xlsx")
+            selected_file_name = "reporte_presupuestos_2026.xlsx"
         else:
             selected_file_path = os.path.join("sample_data", "datos_ventas_2015.csv")
             selected_file_name = "datos_ventas_2015.csv"
 
     else:
         uploaded_file = st.file_uploader(
-            "Carga un archivo (PDF, CSV, TXT, MD)",
-            type=["pdf", "csv", "txt", "md"]
+            "Carga un archivo (PDF, CSV, Excel XLSX/XLS, TXT, MD)",
+            type=["pdf", "csv", "txt", "md", "xlsx", "xls"]
         )
         if uploaded_file:
             with tempfile.NamedTemporaryFile(delete=False, suffix=f".{uploaded_file.name.split('.')[-1]}") as tmp:
@@ -171,6 +175,16 @@ if st.session_state.indexed_doc_name:
         with col3:
             if st.button("⏱️ ¿Cuál es la política de reembolso y SLA?"):
                 preset_q = "¿Cuál es el SLA de disponibilidad garantizado y la política de reembolso?"
+    elif "xlsx" in st.session_state.indexed_doc_name.lower() or "presupuesto" in st.session_state.indexed_doc_name.lower():
+        with col1:
+            if st.button("📈 ¿Cuál es el departamento con mayor presupuesto?"):
+                preset_q = "¿Cuál es el departamento con mayor presupuesto asignado para 2026 y cuál es el monto?"
+        with col2:
+            if st.button("👤 ¿Quién es el responsable de Ventas & LATAM?"):
+                preset_q = "¿Quién es la persona responsable del departamento de Ventas & LATAM?"
+        with col3:
+            if st.button("💰 ¿Cuál es el presupuesto de Recursos Humanos?"):
+                preset_q = "¿Cuál es el presupuesto asignado a Recursos Humanos?"
     else:
         with col1:
             if st.button("📊 ¿Cuál fue el producto más vendido en dic 2015?"):
