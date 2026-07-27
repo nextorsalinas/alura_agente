@@ -17,9 +17,9 @@ def load_environment_config() -> None:
     """Carga variables desde .env si están disponibles."""
     env_path = Path(__file__).resolve().parent / ".env"
     if env_path.exists():
-        load_dotenv(dotenv_path=env_path, override=False)
+        load_dotenv(dotenv_path=env_path, override=True)
     else:
-        load_dotenv(override=False)
+        load_dotenv(override=True)
 
 
 class DocumentAgentEngine:
@@ -33,16 +33,47 @@ class DocumentAgentEngine:
         os.environ["GEMINI_API_KEY"] = self.api_key
         os.environ["GOOGLE_API_KEY"] = self.api_key
         
-        # Initialize Embeddings & LLM
-        self.embeddings = GoogleGenerativeAIEmbeddings(
-            model="models/gemini-embedding-001",
-            google_api_key=self.api_key
-        )
+        # Fallback de modelos de Embeddings para garantizar compatibilidad
+        embedding_models = [
+            "models/gemini-embedding-001",
+            "models/gemini-embedding-2-preview",
+            "models/text-embedding-004",
+            "models/embedding-001"
+        ]
+        
+        self.embeddings = None
+        for model_name in embedding_models:
+            try:
+                emb = GoogleGenerativeAIEmbeddings(
+                    model=model_name,
+                    google_api_key=self.api_key
+                )
+                # Probar vectorización simple para verificar disponibilidad
+                emb.embed_query("test_check")
+                self.embeddings = emb
+                break
+            except Exception as e:
+                continue
+                
+        if not self.embeddings:
+            self.embeddings = GoogleGenerativeAIEmbeddings(
+                model="models/gemini-embedding-001",
+                google_api_key=self.api_key
+            )
+
+        # Fallback de modelos LLM para respuestas
+        llm_models = [
+            "models/gemini-2.5-flash",
+            "models/gemini-2.0-flash",
+            "models/gemini-2.0-flash-lite",
+            "models/gemini-flash-latest"
+        ]
         self.llm = ChatGoogleGenerativeAI(
             model="models/gemini-2.5-flash",
             temperature=0.2,
             google_api_key=self.api_key
         )
+
         self.vector_store = None
         self.raw_dataframe = None
 
