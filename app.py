@@ -5,10 +5,11 @@ from rag_engine import DocumentAgentEngine
 
 # Streamlit Page Config
 st.set_page_config(
-    page_title="Alura Agente - Inteligencia Artificial Corporativa",
+    page_title="DataBriks IA - Inteligencia Artificial Corporativa",
     page_icon="🤖",
     layout="wide"
 )
+
 
 # Custom CSS for modern UI design
 st.markdown("""
@@ -53,7 +54,7 @@ st.markdown("""
 # Header Section
 st.markdown("""
 <div class="main-header">
-    <h1>🤖 Alura Agente IA <span class="badge-gcp">Cloud Run / GCP Activo</span></h1>
+    <h1>🤖 DataBriks IA <span class="badge-gcp">Cloud Run / GCP Activo</span></h1>
     <p>Asistente virtual para consulta instantánea de documentos corporativos (PDF, CSV, Excel XLSX, TXT, MD)</p>
 </div>
 """, unsafe_allow_html=True)
@@ -61,7 +62,7 @@ st.markdown("""
 # Sidebar Configuration
 with st.sidebar:
     st.image("https://img.icons8.com/color/96/000000/google-cloud-platform.png", width=60)
-    st.header("⚙️ Configuración del Agente")
+    
     
     api_key = st.text_input(
         "Gemini API Key",
@@ -71,17 +72,18 @@ with st.sidebar:
     )
     
     st.divider()
-    st.subheader("📂 Documentación Corporativa")
+    st.subheader("Documentación Corporativa")
     
     doc_source = st.radio(
         "Selecciona el origen del documento:",
-        ["Documentos de Muestra (Demo)", "Subir Mi Propio Archivo"]
+        ["Subir Archivo", "(Demo)"],
+        index=0
     )
     
     selected_file_path = None
     selected_file_name = None
 
-    if doc_source == "Documentos de Muestra (Demo)":
+    if doc_source == "(Demo)":
         sample_choice = st.selectbox(
             "Elije un documento de prueba:",
             [
@@ -106,7 +108,7 @@ with st.sidebar:
 
     else:
         uploaded_file = st.file_uploader(
-            "Carga un archivo (PDF, CSV, Excel XLSX/XLS, TXT, MD)",
+            "Carga un archivo ",
             type=["pdf", "csv", "txt", "md", "xlsx", "xls"]
         )
         if uploaded_file:
@@ -150,51 +152,51 @@ if process_btn:
 if st.session_state.indexed_doc_name:
     st.info(f"📄 **Documento Activo:** `{st.session_state.indexed_doc_name}` | Listo para responder preguntas.")
 
-    # Suggested Questions Buttons
-    st.markdown("### Preguntas Sugeridas de Prueba:")
-    col1, col2, col3 = st.columns(3)
-    
     preset_q = None
-    if "manual_tecnologia" in st.session_state.indexed_doc_name:
-        with col1:
-            if st.button("💻 ¿Qué lenguajes usan en el back-end?"):
-                preset_q = "¿Qué lenguajes de programación se usan en el back-end de la plataforma de ventas de la empresa?"
-        with col2:
-            if st.button("☁️ ¿En qué nube está alojada la infraestructura?"):
-                preset_q = "¿En qué plataforma cloud y servicios se aloja la infraestructura de la empresa?"
-        with col3:
-            if st.button("🎓 ¿Cuál es el presupuesto educativo?"):
-                preset_q = "¿Cuál es el presupuesto anual para capacitaciones y cursos?"
-    elif "saas" in st.session_state.indexed_doc_name.lower():
-        with col1:
-            if st.button("💳 ¿Qué planes y precios ofrecen?"):
-                preset_q = "¿Cuáles son los planes y precios mensuales disponibles en la plataforma?"
-        with col2:
-            if st.button("🔒 ¿Cómo protegen la privacidad de los datos de IA?"):
-                preset_q = "¿Los documentos cargados en el agente de IA se usan para entrenar modelos públicos?"
-        with col3:
-            if st.button("⏱️ ¿Cuál es la política de reembolso y SLA?"):
-                preset_q = "¿Cuál es el SLA de disponibilidad garantizado y la política de reembolso?"
-    elif "xlsx" in st.session_state.indexed_doc_name.lower() or "presupuesto" in st.session_state.indexed_doc_name.lower():
-        with col1:
-            if st.button("📈 ¿Cuál es el departamento con mayor presupuesto?"):
-                preset_q = "¿Cuál es el departamento con mayor presupuesto asignado para 2026 y cuál es el monto?"
-        with col2:
-            if st.button("👤 ¿Quién es el responsable de Ventas & LATAM?"):
-                preset_q = "¿Quién es la persona responsable del departamento de Ventas & LATAM?"
-        with col3:
-            if st.button("💰 ¿Cuál es el presupuesto de Recursos Humanos?"):
-                preset_q = "¿Cuál es el presupuesto asignado a Recursos Humanos?"
-    else:
-        with col1:
-            if st.button("📊 ¿Cuál fue el producto más vendido en dic 2015?"):
-                preset_q = "¿Cuál fue el producto más vendido o con mayores ventas en diciembre de 2015?"
-        with col2:
-            if st.button("💰 ¿Quién fue el vendedor con más ventas?"):
-                preset_q = "¿Qué vendedores registraron mayores ventas en diciembre de 2015?"
-        with col3:
-            if st.button("📈 ¿Qué categorías de productos hay?"):
-                preset_q = "¿Qué categorías de productos se vendieron en diciembre de 2015?"
+    if doc_source == "(Demo)":
+        st.markdown("### Preguntas Sugeridas de Prueba:")
+        col1, col2, col3 = st.columns(3)
+
+        if "manual_tecnologia" in st.session_state.indexed_doc_name:
+            with col1:
+                if st.button("💻 ¿Qué lenguajes usan en el back-end?"):
+                    preset_q = "¿Qué lenguajes de programación se usan en el back-end de la plataforma de ventas de la empresa?"
+            with col2:
+                if st.button("☁️ ¿En qué nube está alojada la infraestructura?"):
+                    preset_q = "¿En qué plataforma cloud y servicios se aloja la infraestructura de la empresa?"
+            with col3:
+                if st.button("🎓 ¿Cuál es el presupuesto educativo?"):
+                    preset_q = "¿Cuál es el presupuesto anual para capacitaciones y cursos?"
+        elif "saas" in st.session_state.indexed_doc_name.lower():
+            with col1:
+                if st.button("💳 ¿Qué planes y precios ofrecen?"):
+                    preset_q = "¿Cuáles son los planes y precios mensuales disponibles en la plataforma?"
+            with col2:
+                if st.button("🔒 ¿Cómo protegen la privacidad de los datos de IA?"):
+                    preset_q = "¿Los documentos cargados en el agente de IA se usan para entrenar modelos públicos?"
+            with col3:
+                if st.button("⏱️ ¿Cuál es la política de reembolso y SLA?"):
+                    preset_q = "¿Cuál es el SLA de disponibilidad garantizado y la política de reembolso?"
+        elif "xlsx" in st.session_state.indexed_doc_name.lower() or "presupuesto" in st.session_state.indexed_doc_name.lower():
+            with col1:
+                if st.button("📈 ¿Cuál es el departamento con mayor presupuesto?"):
+                    preset_q = "¿Cuál es el departamento con mayor presupuesto asignado para 2026 y cuál es el monto?"
+            with col2:
+                if st.button("👤 ¿Quién es el responsable de Ventas & LATAM?"):
+                    preset_q = "¿Quién es la persona responsable del departamento de Ventas & LATAM?"
+            with col3:
+                if st.button("💰 ¿Cuál es el presupuesto de Recursos Humanos?"):
+                    preset_q = "¿Cuál es el presupuesto asignado a Recursos Humanos?"
+        else:
+            with col1:
+                if st.button("📊 ¿Cuál fue el producto más vendido en dic 2015?"):
+                    preset_q = "¿Cuál fue el producto más vendido o con mayores ventas en diciembre de 2015?"
+            with col2:
+                if st.button("💰 ¿Quién fue el vendedor con más ventas?"):
+                    preset_q = "¿Qué vendedores registraron mayores ventas en diciembre de 2015?"
+            with col3:
+                if st.button("📈 ¿Qué categorías de productos hay?"):
+                    preset_q = "¿Qué categorías de productos se vendieron en diciembre de 2015?"
 
     # Render previous messages
     for msg in st.session_state.messages:
