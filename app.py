@@ -86,12 +86,16 @@ with st.sidebar:
             "Elije un documento de prueba:",
             [
                 "manual_tecnologia_y_politicas.md (PDF/Markdown Tecnologías)",
+                "documentacion_saas_plataforma.md (SaaS: Precios, FAQ y Términos)",
                 "datos_ventas_2015.csv (CSV Reporte Ventas)"
             ]
         )
         if "manual_tecnologia_y_politicas.md" in sample_choice:
             selected_file_path = os.path.join("sample_data", "manual_tecnologia_y_politicas.md")
             selected_file_name = "manual_tecnologia_y_politicas.md"
+        elif "documentacion_saas_plataforma.md" in sample_choice:
+            selected_file_path = os.path.join("sample_data", "documentacion_saas_plataforma.md")
+            selected_file_name = "documentacion_saas_plataforma.md"
         else:
             selected_file_path = os.path.join("sample_data", "datos_ventas_2015.csv")
             selected_file_name = "datos_ventas_2015.csv"
@@ -157,6 +161,16 @@ if st.session_state.indexed_doc_name:
         with col3:
             if st.button("🎓 ¿Cuál es el presupuesto educativo?"):
                 preset_q = "¿Cuál es el presupuesto anual para capacitaciones y cursos?"
+    elif "saas" in st.session_state.indexed_doc_name.lower():
+        with col1:
+            if st.button("💳 ¿Qué planes y precios ofrecen?"):
+                preset_q = "¿Cuáles son los planes y precios mensuales disponibles en la plataforma?"
+        with col2:
+            if st.button("🔒 ¿Cómo protegen la privacidad de los datos de IA?"):
+                preset_q = "¿Los documentos cargados en el agente de IA se usan para entrenar modelos públicos?"
+        with col3:
+            if st.button("⏱️ ¿Cuál es la política de reembolso y SLA?"):
+                preset_q = "¿Cuál es el SLA de disponibilidad garantizado y la política de reembolso?"
     else:
         with col1:
             if st.button("📊 ¿Cuál fue el producto más vendido en dic 2015?"):
