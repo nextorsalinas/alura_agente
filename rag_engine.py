@@ -89,32 +89,57 @@ class DocumentAgentEngine:
             loader = TextLoader(file_path, encoding='utf-8')
             documents = loader.load()
         elif ext == 'csv':
-            # Store dataframe for structured tabular queries if needed
             self.raw_dataframe = pd.read_csv(file_path)
-            loader = CSVLoader(file_path, encoding='utf-8')
-            documents = loader.load()
+            from langchain_core.documents import Document
+            documents = []
+            rows_buffer = []
+            chunk_batch_size = 15
+            for idx, row in self.raw_dataframe.iterrows():
+                row_str = f"Fila {idx + 1}: " + ", ".join([f"{col}: {val}" for col, val in row.items() if pd.notna(val)])
+                rows_buffer.append(row_str)
+                if len(rows_buffer) >= chunk_batch_size:
+                    documents.append(Document(page_content="\n".join(rows_buffer), metadata={"source": filename, "start_row": idx - len(rows_buffer) + 2, "end_row": idx + 1}))
+                    rows_buffer = []
+            if rows_buffer:
+                documents.append(Document(page_content="\n".join(rows_buffer), metadata={"source": filename}))
         elif ext in ['xlsx', 'xls']:
             from langchain_core.documents import Document
             excel_file = pd.ExcelFile(file_path)
             self.raw_dataframe = pd.read_excel(file_path)
             documents = []
+            chunk_batch_size = 15
             for sheet_name in excel_file.sheet_names:
                 df = pd.read_excel(file_path, sheet_name=sheet_name)
+                rows_buffer = []
                 for idx, row in df.iterrows():
                     row_str = f"Hoja: {sheet_name} | Fila {idx + 1}: " + ", ".join([f"{col}: {val}" for col, val in row.items() if pd.notna(val)])
-                    documents.append(Document(page_content=row_str, metadata={"source": filename, "sheet": sheet_name, "row": idx + 1}))
+                    rows_buffer.append(row_str)
+                    if len(rows_buffer) >= chunk_batch_size:
+                        documents.append(Document(page_content="\n".join(rows_buffer), metadata={"source": filename, "sheet": sheet_name}))
+                        rows_buffer = []
+                if rows_buffer:
+                    documents.append(Document(page_content="\n".join(rows_buffer), metadata={"source": filename, "sheet": sheet_name}))
         else:
             raise ValueError(f"Formato no soportado: .{ext}. Usa PDF, CSV, TXT, MD, XLSX o XLS.")
 
         # Chunking documents
         text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=800,
-            chunk_overlap=150
+            chunk_size=1500,
+            chunk_overlap=200
         )
         chunks = text_splitter.split_documents(documents)
 
-        # Create FAISS Vector Index
-        self.vector_store = FAISS.from_documents(chunks, self.embeddings)
+        # Create FAISS Vector Index with retry for rate limits
+        import time
+        for attempt in range(3):
+            try:
+                self.vector_store = FAISS.from_documents(chunks, self.embeddings)
+                break
+            except Exception as e:
+                if "RESOURCE_EXHAUSTED" in str(e) or "429" in str(e):
+                    time.sleep(10)
+                else:
+                    raise e
         return f"Documento '{filename}' procesado exitosamente. {len(chunks)} fragmentos indexados."
 
     def answer_question(self, question: str) -> Dict[str, Any]:
