@@ -93,7 +93,7 @@ class DocumentAgentEngine:
             from langchain_core.documents import Document
             documents = []
             rows_buffer = []
-            chunk_batch_size = 15
+            chunk_batch_size = 25  # Agrupación masiva para evitar exceder 100 RPM
             for idx, row in self.raw_dataframe.iterrows():
                 row_str = f"Fila {idx + 1}: " + ", ".join([f"{col}: {val}" for col, val in row.items() if pd.notna(val)])
                 rows_buffer.append(row_str)
@@ -107,7 +107,7 @@ class DocumentAgentEngine:
             excel_file = pd.ExcelFile(file_path)
             self.raw_dataframe = pd.read_excel(file_path)
             documents = []
-            chunk_batch_size = 15
+            chunk_batch_size = 25  # Agrupación masiva para evitar exceder 100 RPM
             for sheet_name in excel_file.sheet_names:
                 df = pd.read_excel(file_path, sheet_name=sheet_name)
                 rows_buffer = []
@@ -124,7 +124,7 @@ class DocumentAgentEngine:
 
         # Chunking documents
         text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1500,
+            chunk_size=2000,
             chunk_overlap=200
         )
         chunks = text_splitter.split_documents(documents)
@@ -148,11 +148,17 @@ class DocumentAgentEngine:
             return {"answer": "No hay ningún documento cargado. Por favor sube un archivo primero.", "sources": []}
 
         # Retrieval of top k relevant chunks
-        retriever = self.vector_store.as_retriever(search_kwargs={"k": 4})
+        retriever = self.vector_store.as_retriever(search_kwargs={"k": 5})
         docs = retriever.invoke(question)
 
         context_text = "\n\n---\n\n".join([doc.page_content for doc in docs])
         sources = [doc.page_content for doc in docs]
+
+        # Inyectar resumen estructural de Pandas para CSVs/Excel masivos
+        if self.raw_dataframe is not None and not self.raw_dataframe.empty:
+            summary_info = f"ESTRUCTURA DE TABLA DATOS (Total filas: {len(self.raw_dataframe)}, Columnas: {list(self.raw_dataframe.columns)})\n"
+            summary_info += f"Muestra inicial de filas:\n{self.raw_dataframe.head(5).to_string()}\n\n---\n\n"
+            context_text = summary_info + context_text
 
         prompt_template = """Eres 'Alura Agente', un asistente inteligente corporativo de alta precisión.
 Tu objetivo es responder a las preguntas de los colaboradores basándote ÚNICAMENTE en la siguiente información de contexto extraída de los documentos internos de la empresa.
