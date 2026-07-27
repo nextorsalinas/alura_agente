@@ -93,7 +93,10 @@ class DocumentAgentEngine:
             from langchain_core.documents import Document
             documents = []
             rows_buffer = []
-            chunk_batch_size = 25  # Agrupación masiva para evitar exceder 100 RPM
+            # Agrupación dinámica: garantiza máximo 30 fragmentos para no superar el límite de 100 RPM de Gemini
+            total_rows = len(self.raw_dataframe)
+            chunk_batch_size = max(25, int(total_rows / 30))
+            
             for idx, row in self.raw_dataframe.iterrows():
                 row_str = f"Fila {idx + 1}: " + ", ".join([f"{col}: {val}" for col, val in row.items() if pd.notna(val)])
                 rows_buffer.append(row_str)
@@ -107,7 +110,9 @@ class DocumentAgentEngine:
             excel_file = pd.ExcelFile(file_path)
             self.raw_dataframe = pd.read_excel(file_path)
             documents = []
-            chunk_batch_size = 25  # Agrupación masiva para evitar exceder 100 RPM
+            total_rows = len(self.raw_dataframe)
+            chunk_batch_size = max(25, int(total_rows / 30))
+            
             for sheet_name in excel_file.sheet_names:
                 df = pd.read_excel(file_path, sheet_name=sheet_name)
                 rows_buffer = []
@@ -124,7 +129,7 @@ class DocumentAgentEngine:
 
         # Chunking documents
         text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=2000,
+            chunk_size=3000,
             chunk_overlap=200
         )
         chunks = text_splitter.split_documents(documents)
@@ -140,7 +145,7 @@ class DocumentAgentEngine:
                     time.sleep(10)
                 else:
                     raise e
-        return f"Documento '{filename}' procesado exitosamente. {len(chunks)} fragmentos indexados."
+        return f"Documento '{filename}' ({len(self.raw_dataframe) if self.raw_dataframe is not None else 0} filas) procesado exitosamente. {len(chunks)} fragmentos indexados."
 
     def answer_question(self, question: str) -> Dict[str, Any]:
         """Responde la pregunta basándose en el contenido del documento indexado."""
