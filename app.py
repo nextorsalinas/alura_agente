@@ -53,7 +53,7 @@ st.markdown("""
 # Header Section
 st.markdown("""
 <div class="main-header">
-    <h1>🤖 Alura Agente IA <span class="badge-gcp">Cloud Run / GCP Ready</span></h1>
+    <h1>🤖 Alura Agente IA <span class="badge-gcp">Cloud Run / GCP Activo</span></h1>
     <p>Asistente virtual para consulta instantánea de documentos corporativos (PDF, CSV, TXT, MD)</p>
 </div>
 """, unsafe_allow_html=True)
@@ -132,14 +132,18 @@ if process_btn:
                 st.session_state.indexed_doc_name = selected_file_name
                 st.success(f"✅ {status_msg}")
             except Exception as e:
-                st.error(f"Error procesando el documento: {str(e)}")
+                error_msg = str(e)
+                if "API key" in error_msg.lower() or "invalid" in error_msg.lower():
+                    st.error("⚠️ La API key de Gemini no es válida. Revisa la clave en la barra lateral o en el archivo .env y vuelve a intentarlo.")
+                else:
+                    st.error(f"Error procesando el documento: {error_msg}")
 
 # Active Document Banner
 if st.session_state.indexed_doc_name:
     st.info(f"📄 **Documento Activo:** `{st.session_state.indexed_doc_name}` | Listo para responder preguntas.")
 
     # Suggested Questions Buttons
-    st.markdown("### 💡 Preguntas Sugeridas de Prueba:")
+    st.markdown("### Preguntas Sugeridas de Prueba:")
     col1, col2, col3 = st.columns(3)
     
     preset_q = None
@@ -197,4 +201,4 @@ if st.session_state.indexed_doc_name:
                 st.session_state.messages.append({"role": "assistant", "content": answer})
 
 else:
-    st.warning("👈 Para comenzar, selecciona un documento de prueba o sube tu propio archivo desde la barra lateral izquierda y haz clic en **Indexar Documento**.")
+    st.warning("Para comenzar, selecciona un documento de prueba o sube tu propio archivo desde la barra lateral izquierda y haz clic en **Indexar Documento**.")
