@@ -1,0 +1,7 @@
+Fecha,Producto,Categoria,Cantidad_Vendida,Precio_Unitario_USD,Venta_Total_USD,Vendedor,Region
+2015-12-01,Laptop Pro Max,Electronica,45,1200,54000,Carlos Ruiz,LATAM
+2015-12-05,Servidor Enterprise X,Infraestructura,12,3500,42000,Ana Gomez,Norteamerica
+2015-12-10,Licencia ERP Cloud,Software,150,500,75000,Carlos Ruiz,LATAM
+2015-12-15,Monitor UltraWide 34,Electronica,80,450,36000,Maria Lopez,Europa
+2015-12-20,Teclado Mecanico RGB,Accesorios,300,80,24000,Ana Gomez,LATAM
+2015-12-28,Audifonos NoiseCancelling,Accesorios,210,150,31500,Maria Lopez,Europa
