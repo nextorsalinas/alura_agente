@@ -1,7 +1,9 @@
 import os
 import tempfile
+from pathlib import Path
 import pandas as pd
 from typing import List, Tuple, Dict, Any
+from dotenv import load_dotenv
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, CSVLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
@@ -10,8 +12,19 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 
+
+def load_environment_config() -> None:
+    """Carga variables desde .env si están disponibles."""
+    env_path = Path(__file__).resolve().parent / ".env"
+    if env_path.exists():
+        load_dotenv(dotenv_path=env_path, override=False)
+    else:
+        load_dotenv(override=False)
+
+
 class DocumentAgentEngine:
     def __init__(self, api_key: str = None):
+        load_environment_config()
         self.api_key = api_key or os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
         if not self.api_key:
             raise ValueError("No se encontró la GEMINI_API_KEY. Por favor configura tu API key en las variables de entorno o la interfaz.")
@@ -22,11 +35,11 @@ class DocumentAgentEngine:
         
         # Initialize Embeddings & LLM
         self.embeddings = GoogleGenerativeAIEmbeddings(
-            model="models/text-embedding-004",
+            model="models/gemini-embedding-001",
             google_api_key=self.api_key
         )
         self.llm = ChatGoogleGenerativeAI(
-            model="gemini-2.0-flash",
+            model="models/gemini-2.5-flash",
             temperature=0.2,
             google_api_key=self.api_key
         )
